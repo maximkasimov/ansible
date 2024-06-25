@@ -1,0 +1,37 @@
+- name: "Copy app files"
+  ansible.builtin.copy:
+    src: files/app
+    dest: apps
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: "Copy bin files to app"
+  ansible.builtin.copy:
+    src: files/app/bin
+    dest: apps/app
+    owner: vagrant
+    group: vagrant
+    mode: 0755
+
+
+- name: "Installing necessary packages for app"
+  ansible.builtin.apt:
+    name:
+     - ruby
+     - ruby-dev
+     - libxml2
+     - build-essential
+     - zlib1g-dev
+     - libpq-dev
+     - libxml2-dev
+    state: latest
+    update_cache: True
+
+
+- name: "Install Bundler"
+  ansible.builtin.command: gem install bundler:1.6.1
+
+- name: "Install dependencies through bundle"
+  ansible.builtin.command: apps/{{app_name}}/bin/bundle config build.nokogiri --use-system-libraries &&  apps/{{app_name}}/bin/bundle install --clean --no-cache --without development
+

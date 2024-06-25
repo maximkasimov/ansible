@@ -1,0 +1,70 @@
+---
+#  name: Install and configure Postgres
+#  hosts: app
+#  become: yes
+#
+  vars_files:
+   - vars.yml
+
+  pre_tasks:
+   - name: "Update apt repo and cache"
+     apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+   - name: "Install packages"
+     apt: "name={{ item }} state=present"
+     with_items:
+       - postgresql
+       - postgresql-contrib
+       - python3-pip
+       - python3-dev
+       - python3-venv
+       - python3-psycopg2
+
+   - name: "Install Python packages"
+     pip: "name={{ item }}  state=present"
+     with_items:
+       - psycopg2-binary
+
+  tasks:
+    - name: "Find out if PostgreSQL is initialized"
+      ansible.builtin.stat:
+        path: "/var/lib/pgsql/data/pg_hba.conf"
+      register: postgres_data
+
+#    - name: "Initialize PostgreSQL"
+#      shell: "postgresql-setup initdb"
+#      when: not postgres_data.stat.exists
+
+    - name: "Start and enable services"
+      service: "name={{ item }} state=started enabled=yes"
+      with_items:
+        - postgresql
+
+    - name: "Create app database"
+      become: yes
+      become_user: postgres
+      postgresql_db:
+        state: present
+        name: "{{ db_name }}"
+
+    - name: "Create db user"
+      postgresql_user:
+        state: present
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+      become: yes
+      become_user: postgres
+
+    - name: "Grant db user access to app db"
+      postgresql_privs:
+        type: database
+        database: "{{ db_name }}"
+        roles: "{{ db_user }}"
+        grant_option: no
+        privs: all
+      become: yes
+      become_user: postgres
+
+  handlers:
+    - name: restart postgres
+      service: name=postgresql state=restarted
