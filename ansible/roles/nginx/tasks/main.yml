@@ -5,8 +5,3 @@
     owner: vagrant
     group: vagrant
     mode: 0755
-
-- name: "Reload nginx"
-  service:
-    name: nginx
-    state: reloaded
