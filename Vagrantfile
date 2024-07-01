@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     controlnode.vm.provision "shell", inline: <<-SHELL
       sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/#g' /etc/ssh/sshd_config
       service ssh restart
-      sudo apt update -y && sudo apt-add-repository ppa:ansible/ansible && sudo apt -y install sshpass ansible
+      sudo apt update -y && sudo apt-add-repository ppa:ansible/ansible && sudo apt -y install sshpass ansible && sudo ansible-galaxy install -r ansible/requirements.yml
       chmod 600 /home/vagrant/.ssh/examid
       chmod 644 /home/vagrant/.ssh/examid.pub
     SHELL
