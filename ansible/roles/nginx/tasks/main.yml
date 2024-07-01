@@ -1,4 +1,10 @@
-
+- name: "Copy config file to /etc/nginx"
+  ansible.builtin.copy:
+    src: files/app/config/nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: vagrant
+    group: vagrant
+    mode: 0755
 
 - name: "Reload nginx"
   service:
